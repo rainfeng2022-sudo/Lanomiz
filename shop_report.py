@@ -135,6 +135,7 @@ def fetch_orders(keys: Dict[str, str], cipher: str, start_ts: int, end_ts: int) 
         page_token = data.get("next_page_token") or ""
         if not page_token:
             break
+        import time; time.sleep(1)
     return orders
 
 

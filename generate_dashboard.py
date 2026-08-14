@@ -63,6 +63,7 @@ def fetch_all_samples(keys, cipher):
         sys.stderr.write(f"\r  Samples: {len(all_apps)}")
         pt = data.get("next_page_token") or ""
         if not pt: break
+        time.sleep(1)
     sys.stderr.write("\n")
     return all_apps
 
