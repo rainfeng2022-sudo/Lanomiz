@@ -429,7 +429,7 @@ function drawTrend(daily,selDay){
     const bh=d.orders/maxO*ch;
     const isSel=d.d===selDay.slice(5);
     ctx.fillStyle=isSel?'rgba(196,83,106,0.35)':barBg;
-    ctx.beginPath();ctx.roundRect(x-bw/2,pad.t+ch-bh,bw,bh,[3,3,0,0]);ctx.fill();
+    ctx.fillRect(x-bw/2,pad.t+ch-bh,bw,bh);
   });
 
   ctx.strokeStyle=acCol;ctx.lineWidth=2;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();
@@ -474,7 +474,7 @@ function drawHours(hours){
     const bh=v/mx*ch;
     ctx.fillStyle=CS[0];
     ctx.globalAlpha=0.7;
-    ctx.beginPath();ctx.roundRect(x-bw/2,pad.t+ch-bh,bw,bh,[2,2,0,0]);ctx.fill();
+    ctx.fillRect(x-bw/2,pad.t+ch-bh,bw,bh);
     ctx.globalAlpha=1;
   });
 
