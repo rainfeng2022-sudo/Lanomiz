@@ -96,16 +96,20 @@ def api_call(
     body_str = json.dumps(body) if body is not None else ""
     base = secret + path + "".join(k + params[k] for k in sorted(params)) + body_str + secret
     params["sign"] = hmac.new(secret.encode(), base.encode(), hashlib.sha256).hexdigest()
-    resp = requests.request(
-        method,
-        API_BASE + path,
-        params=params,
-        headers={"x-tts-access-token": keys["access_token"], "content-type": "application/json"},
-        data=body_str if body is not None else None,
-        timeout=60,
-    ).json()
-    if resp.get("code") != 0:
-        raise RuntimeError(f"API {path} failed: {resp.get('code')} {resp.get('message')}")
+    for attempt in range(3):
+        resp = requests.request(
+            method,
+            API_BASE + path,
+            params=params,
+            headers={"x-tts-access-token": keys["access_token"], "content-type": "application/json"},
+            data=body_str if body is not None else None,
+            timeout=60,
+        ).json()
+        if resp.get("code") == 0:
+            return resp.get("data") or {}
+        if attempt < 2:
+            import time as _t; _t.sleep(3)
+    raise RuntimeError(f"API {path} failed: {resp.get('code')} {resp.get('message')}")
     return resp.get("data") or {}
 
 
