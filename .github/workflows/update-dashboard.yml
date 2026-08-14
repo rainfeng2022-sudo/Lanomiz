@@ -38,28 +38,39 @@ jobs:
 
       - name: Update secrets if token refreshed
         if: steps.gen.outputs.access_token != ''
-        uses: actions/github-script@v7
+        uses: hmanzur/actions-set-secret@v2.0.0
         with:
-          github-token: ${{ secrets.GH_PAT }}
-          script: |
-            const secrets = {
-              TK_ACCESS_TOKEN: '${{ steps.gen.outputs.access_token }}',
-              TK_REFRESH_TOKEN: '${{ steps.gen.outputs.refresh_token }}',
-              TK_ACCESS_TOKEN_EXPIRE: '${{ steps.gen.outputs.access_token_expire_in }}',
-              TK_REFRESH_TOKEN_EXPIRE: '${{ steps.gen.outputs.refresh_token_expire_in }}',
-            };
-            const sodium = require('tweetsodium');
-            const { data: { key, key_id } } = await github.rest.actions.getRepoPublicKey({
-              owner: context.repo.owner, repo: context.repo.repo
-            });
-            for (const [name, value] of Object.entries(secrets)) {
-              if (!value) continue;
-              const enc = Buffer.from(sodium.seal(Buffer.from(value), Buffer.from(key, 'base64'))).toString('base64');
-              await github.rest.actions.createOrUpdateRepoSecret({
-                owner: context.repo.owner, repo: context.repo.repo,
-                secret_name: name, encrypted_value: enc, key_id
-              });
-            }
+          token: ${{ secrets.GH_PAT }}
+          repository: ${{ github.repository }}
+          name: TK_ACCESS_TOKEN
+          value: ${{ steps.gen.outputs.access_token }}
+
+      - name: Update refresh token secret
+        if: steps.gen.outputs.access_token != ''
+        uses: hmanzur/actions-set-secret@v2.0.0
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repository: ${{ github.repository }}
+          name: TK_REFRESH_TOKEN
+          value: ${{ steps.gen.outputs.refresh_token }}
+
+      - name: Update token expire secrets
+        if: steps.gen.outputs.access_token != ''
+        uses: hmanzur/actions-set-secret@v2.0.0
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repository: ${{ github.repository }}
+          name: TK_ACCESS_TOKEN_EXPIRE
+          value: ${{ steps.gen.outputs.access_token_expire_in }}
+
+      - name: Update refresh token expire secret
+        if: steps.gen.outputs.access_token != ''
+        uses: hmanzur/actions-set-secret@v2.0.0
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repository: ${{ github.repository }}
+          name: TK_REFRESH_TOKEN_EXPIRE
+          value: ${{ steps.gen.outputs.refresh_token_expire_in }}
 
       - name: Deploy to GitHub Pages
         run: |
