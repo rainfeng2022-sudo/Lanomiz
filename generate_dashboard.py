@@ -195,8 +195,10 @@ def collect_data(keys, cipher):
 
 
 def build_html(data, updated_at):
+    import hashlib
+    pw_hash = hashlib.sha256(DASHBOARD_PASSWORD.encode()).hexdigest()
     d = json.dumps(data, ensure_ascii=False)
-    return TEMPLATE.replace("__DATA__", d).replace("__UPDATED__", updated_at).replace("__PASSWORD__", DASHBOARD_PASSWORD)
+    return TEMPLATE.replace("__DATA__", d).replace("__UPDATED__", updated_at).replace("__PASSWORD_HASH__", pw_hash)
 
 
 TEMPLATE = r'''<!DOCTYPE html>
@@ -341,9 +343,10 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSyst
 </div>
 
 <script>
-const PW="__PASSWORD__";
-function go(){
-  if(document.getElementById('pwd').value===PW){
+const PH="__PASSWORD_HASH__";
+async function sha256(s){const d=new TextEncoder().encode(s);const h=await crypto.subtle.digest('SHA-256',d);return[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function go(){
+  if(await sha256(document.getElementById('pwd').value)===PH){
     document.getElementById('login').style.display='none';
     document.getElementById('dash').style.display='block';
     try{sessionStorage.setItem('a','1')}catch(e){}
