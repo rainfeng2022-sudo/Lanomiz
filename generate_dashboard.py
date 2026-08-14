@@ -445,16 +445,16 @@ function drawTrend(daily,selDay){
   ctx.fillStyle=acCol;ctx.beginPath();ctx.arc(lx,ly,3.5,0,Math.PI*2);ctx.fill();
 
   ctx.fillStyle=mutCol;ctx.font='10px sans-serif';ctx.textAlign='center';
-  daily.forEach((d,i)=>{if(i%2===0||i===n-1){ctx.fillText(d.d,pad.l+cw*(i+.5)/n,h-4)}});
+  const step=w<500?4:2;daily.forEach((d,i)=>{if(i%step===0||i===n-1){ctx.fillText(d.d,pad.l+cw*(i+.5)/n,h-4)}});
   ctx.textAlign='right';ctx.textBaseline='middle';
   for(let i=0;i<4;i++){ctx.fillText(fmt(maxO*(3-i)/3),pad.l-4,pad.t+ch*i/3)}
   ctx.textAlign='left';ctx.fillStyle=acCol;
   for(let i=0;i<4;i++){ctx.fillText('$'+fmt(maxR*(3-i)/3),pad.l+cw+4,pad.t+ch*i/3)}
 
-  ctx.fillStyle=barBg.replace('0.3','0.6').replace('0.2','0.5');ctx.fillRect(pad.l,h-14,10,8);
-  ctx.fillStyle=mutCol;ctx.font='10px sans-serif';ctx.textAlign='left';ctx.fillText('订单',pad.l+14,h-7);
-  ctx.strokeStyle=acCol;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pad.l+50,h-10);ctx.lineTo(pad.l+62,h-10);ctx.stroke();
-  ctx.fillStyle=mutCol;ctx.fillText('销售额',pad.l+66,h-7);
+  const lx0=pad.l;ctx.fillStyle=barBg.replace('0.3','0.6').replace('0.2','0.5');ctx.fillRect(lx0,h-14,10,8);
+  ctx.fillStyle=mutCol;ctx.font='10px sans-serif';ctx.textAlign='left';ctx.fillText('订单',lx0+14,h-7);
+  ctx.strokeStyle=acCol;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(lx0+46,h-10);ctx.lineTo(lx0+58,h-10);ctx.stroke();
+  ctx.fillStyle=mutCol;ctx.fillText('销售额',lx0+62,h-7);
 }
 
 function drawHours(hours){
