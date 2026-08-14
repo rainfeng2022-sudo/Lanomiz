@@ -262,7 +262,7 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSyst
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .cc{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:14px}
 .cc h3{font-size:12px;font-weight:600;margin-bottom:8px}
-.cc canvas{width:100%!important;height:auto!important}
+.cc canvas{width:100%!important;height:200px!important}
 .cc.full{grid-column:span 2}
 
 .leg{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px}
@@ -316,7 +316,7 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSyst
 
     <div class="sec">
       <div class="sec-t">14天趋势</div>
-      <div class="cc full"><canvas id="trendC" height="180"></canvas></div>
+      <div class="cc full"><canvas id="trendC" style="width:100%;height:200px"></canvas></div>
     </div>
 
     <div class="sec">
@@ -326,7 +326,7 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSyst
         <div class="cc"><h3>支付方式</h3><canvas id="pie2" height="200"></canvas><div class="leg" id="leg2"></div></div>
         <div class="cc"><h3>尺码分布</h3><canvas id="pie3" height="200"></canvas><div class="leg" id="leg3"></div></div>
         <div class="cc"><h3>颜色分布</h3><canvas id="pie4" height="200"></canvas><div class="leg" id="leg4"></div></div>
-        <div class="cc"><h3>下单时段</h3><canvas id="hourC" height="180"></canvas></div>
+        <div class="cc"><h3>下单时段</h3><canvas id="hourC" style="width:100%;height:200px"></canvas></div>
         <div class="cc"><h3>地区 Top 10</h3><div id="regionB"></div></div>
         <div class="cc full"><h3>热卖商品</h3><div id="prodB"></div></div>
       </div>
