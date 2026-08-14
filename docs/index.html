@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>LANOMIZ 运营看板</title>
+<style>
+:root{
+  --bg:#FAF8F6;--card:#FFF;--bdr:#EDE8E3;
+  --t1:#1C1A18;--t2:#6B6560;--t3:#9E9890;
+  --ac:#C4536A;--acl:rgba(196,83,106,.08);
+  --c1:#2a78d6;--c2:#eb6834;--c3:#1baf7a;--c4:#eda100;--c5:#e87ba4;--c6:#4a3aa7;--c7:#e34948;--c8:#008300;
+  --good:#1baf7a;--warn:#eda100;--bad:#e34948;--div:#E8E3DE;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1C1A18;--card:#282422;--bdr:#3A3632;
+  --t1:#F5F0EB;--t2:#B0A99F;--t3:#7A746E;
+  --ac:#E0758B;--acl:rgba(224,117,139,.12);
+  --c1:#3987e5;--c2:#d95926;--c3:#199e70;--c4:#c98500;--c5:#d55181;--c6:#9085e9;--c7:#e66767;--c8:#008300;
+  --div:#3A3632;
+}}
+:root[data-theme="dark"]{
+  --bg:#1C1A18;--card:#282422;--bdr:#3A3632;
+  --t1:#F5F0EB;--t2:#B0A99F;--t3:#7A746E;
+  --ac:#E0758B;--acl:rgba(224,117,139,.12);
+  --c1:#3987e5;--c2:#d95926;--c3:#199e70;--c4:#c98500;--c5:#d55181;--c6:#9085e9;--c7:#e66767;--c8:#008300;
+  --div:#3A3632;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums;line-height:1.5;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+
+#login{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:24px}
+.lbox{background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:40px 32px;width:100%;max-width:320px;text-align:center}
+.lbox h2{font-size:18px;font-weight:700;margin-bottom:4px}
+.lbox .sub{font-size:13px;color:var(--t2);margin-bottom:20px}
+.lbox input{width:100%;padding:12px 16px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;background:var(--bg);color:var(--t1);outline:none;-webkit-appearance:none}
+.lbox input:focus{border-color:var(--ac)}
+.lbox button{width:100%;margin-top:12px;padding:12px;border:none;border-radius:8px;background:var(--ac);color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.lbox .err{color:var(--bad);font-size:13px;margin-top:8px;display:none}
+
+#dash{display:none}
+.page{max-width:1200px;margin:0 auto;padding:24px 14px 60px}
+.hdr h1{font-size:20px;font-weight:700}
+.hdr .sub{font-size:12px;color:var(--t2);margin-top:2px}
+.section{margin-top:24px}
+.section-title{font-size:14px;font-weight:600;color:var(--t2);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--div)}
+
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:16px 0}
+.kpi{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:12px 14px}
+.kpi .l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-size:22px;font-weight:700;margin-top:2px;letter-spacing:-.02em}
+.kpi .d{font-size:10px;color:var(--t2);margin-top:1px}
+
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chart-card{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:16px}
+.chart-card h3{font-size:13px;font-weight:600;margin-bottom:10px}
+.chart-card canvas{width:100%!important;height:auto!important}
+.chart-card.full{grid-column:span 2}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+.h-bar{margin:4px 0}
+.h-bar-label{font-size:11px;color:var(--t2);margin-bottom:2px;display:flex;justify-content:space-between}
+.h-bar-track{height:18px;background:var(--div);border-radius:4px;overflow:hidden;position:relative}
+.h-bar-fill{height:100%;border-radius:4px;min-width:2px}
+.h-bar-val{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:600;color:var(--t1)}
+
+.partner-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.p-card{background:var(--acl);border-radius:8px;padding:12px}
+.p-card .name{font-size:13px;font-weight:600}
+.p-card .info{font-size:11px;color:var(--t2);margin-top:4px}
+
+@media(max-width:640px){
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .kpi:last-child{grid-column:span 2}
+  .chart-grid{grid-template-columns:1fr}
+  .chart-card.full{grid-column:span 1}
+  .page{padding:16px 10px 60px}
+  .hdr h1{font-size:17px}
+  .kpi .v{font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="lbox">
+    <h2>LANOMIZ</h2>
+    <div class="sub">店铺运营看板</div>
+    <input type="password" id="pwd" placeholder="请输入密码" autocomplete="off">
+    <button onclick="go()">进入</button>
+    <div class="err" id="err">密码错误</div>
+  </div>
+</div>
+
+<div id="dash">
+  <div class="page">
+    <div class="hdr">
+      <h1>LANOMIZ 店铺运营看板</h1>
+      <div class="sub">数据来源 TikTok Shop API · 更新 2026-08-13 05:51 (墨西哥时间) · 近30天数据</div>
+    </div>
+    <div class="kpi-row" id="kpi"></div>
+
+    <div class="section">
+      <div class="section-title">订单趋势（近14天）</div>
+      <div class="chart-card full" style="grid-column:span 2">
+        <canvas id="trendChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">订单分析</div>
+      <div class="chart-grid">
+        <div class="chart-card"><h3>订单状态</h3><canvas id="statusPie" height="220"></canvas><div class="legend" id="statusLeg"></div></div>
+        <div class="chart-card"><h3>支付方式</h3><canvas id="payPie" height="220"></canvas><div class="legend" id="payLeg"></div></div>
+        <div class="chart-card"><h3>地区分布 Top 10</h3><div id="regionBars"></div></div>
+        <div class="chart-card"><h3>物流商</h3><canvas id="shipPie" height="220"></canvas><div class="legend" id="shipLeg"></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">商品分析</div>
+      <div class="chart-grid">
+        <div class="chart-card"><h3>尺码分布</h3><canvas id="sizePie" height="220"></canvas><div class="legend" id="sizeLeg"></div></div>
+        <div class="chart-card"><h3>颜色分布</h3><canvas id="colorPie" height="220"></canvas><div class="legend" id="colorLeg"></div></div>
+        <div class="chart-card full"><h3>热卖商品</h3><div id="productBars"></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">样品申请</div>
+      <div class="chart-grid">
+        <div class="chart-card"><h3>样品状态</h3><canvas id="samplePie" height="220"></canvas><div class="legend" id="sampleLeg"></div></div>
+        <div class="chart-card"><h3>合作机构</h3><div class="partner-list" id="partnerList"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PW="lanomiz2026";
+function go(){
+  if(document.getElementById('pwd').value===PW){
+    document.getElementById('login').style.display='none';
+    document.getElementById('dash').style.display='block';
+    try{sessionStorage.setItem('a','1')}catch(e){}
+    render();
+  }else{document.getElementById('err').style.display='block'}
+}
+document.getElementById('pwd').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+try{if(sessionStorage.getItem('a')==='1'){document.getElementById('login').style.display='none';document.getElementById('dash').style.display='block';if(document.readyState!=='loading')render();else window.addEventListener('DOMContentLoaded',render)}}catch(e){}
+
+const D={"summary": {"total_orders": 2712, "valid_orders": 2138, "cancelled": 574, "total_revenue": 324018.6, "total_items": 3164, "sample_orders": 362, "avg_order": 151.55, "cod_rate": 0.0, "total_samples": 4205}, "daily": [{"d": "07-31", "orders": 16, "revenue": 516.0, "items": 15}, {"d": "08-01", "orders": 166, "revenue": 20725.729999999996, "items": 203}, {"d": "08-02", "orders": 230, "revenue": 30472.510000000013, "items": 279}, {"d": "08-03", "orders": 348, "revenue": 32138.250000000004, "items": 366}, {"d": "08-04", "orders": 50, "revenue": 3912.67, "items": 49}, {"d": "08-05", "orders": 46, "revenue": 4205.88, "items": 44}, {"d": "08-06", "orders": 81, "revenue": 13288.519999999999, "items": 103}, {"d": "08-07", "orders": 79, "revenue": 11852.899999999996, "items": 89}, {"d": "08-08", "orders": 69, "revenue": 13704.159999999996, "items": 86}, {"d": "08-09", "orders": 13, "revenue": 2533.8500000000004, "items": 19}, {"d": "08-10", "orders": 32, "revenue": 7366.849999999999, "items": 54}, {"d": "08-11", "orders": 53, "revenue": 9878.519999999995, "items": 77}, {"d": "08-12", "orders": 92, "revenue": 18633.569999999996, "items": 142}, {"d": "08-13", "orders": 16, "revenue": 0.0, "items": 16}], "order_status": {"已取消": 574, "已送达": 1878, "已完成": 25, "运输中": 83, "待揽收": 112, "待付款": 23, "留置中": 1, "待发货": 16}, "payment": {"PayPal": 62, "Credit/debit card": 807, "Cash": 104, "CCI": 217, "SPEI": 71, "PayLater + TikTok Shop Balance": 1, "Mercado Pago": 394, "PayLater": 61, "Apple Pay": 53, "未知": 362, "Credit/debit card + TikTok Shop Balance": 1, "Cash + TikTok Shop Balance": 4, "TikTok Shop Balance + SPEI": 1}, "products": [["LANOMIZ sujetador de gel para mujer…", 3161], ["LANOMIZ sujetador de gel sin aros p…", 2], ["LANOMIZ sujetador sin aros cómodo y…", 1]], "sizes": {"3XL": 429, "XL": 1021, "L": 813, "2XL": 621, "4XL": 7, "M": 273}, "colors": [["Básico Negro", 813], ["Negro", 553], ["Nude", 433], ["Básico Nude", 408], ["Rosa empolvado", 271], ["Rosa nude", 156], ["Básico Café", 138], ["Piel oscura leopardo", 94], ["Rosa leopardo", 89], ["Blanco crema", 70]], "regions": [["墨西哥州", 316], ["墨西哥城", 282], ["哈利斯科", 207], ["新莱昂", 125], ["韦拉克鲁斯", 117], ["瓜纳华托", 101], ["锡那罗亚", 76], ["米却肯", 72], ["塔毛利帕斯", 68], ["下加州", 61]], "providers": [["J&T MX", 2114], ["未分配", 24]], "sample_status": {"待审核": 775, "已发货": 34, "撤回取消": 326, "拒绝取消": 37, "待发货": 16, "待发布": 105, "超时取消": 2621, "已完成": 274, "UNFULFILL_CANCELLED": 13, "SELLER_NOT_SHIP_CANCELLED": 4}, "partners": [{"name": "SEA IDEAL", "apps": 61, "creators": 57}, {"name": "Lucky Focus", "apps": 55, "creators": 48}, {"name": "Passionpeace Media", "apps": 38, "creators": 32}, {"name": "Lefundo Mexico", "apps": 7, "creators": 7}, {"name": "The Brainz MX", "apps": 5, "creators": 5}]};
+const CS=['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#4a3aa7','#e34948','#008300','#9085e9','#d55181'];
+const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+
+function fmt(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return Math.round(n).toLocaleString()}
+
+function drawPie(canvasId,legendId,dataObj,colors){
+  const canvas=document.getElementById(canvasId);
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr;
+  canvas.height=rect.height*dpr;
+  ctx.scale(dpr,dpr);
+  const w=rect.width,h=rect.height;
+  const cx=w/2,cy=h/2,r=Math.min(w,h)/2-20;
+
+  const entries=Object.entries(dataObj).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  if(!total)return;
+
+  let angle=-Math.PI/2;
+  const slices=[];
+  entries.forEach(([label,val],i)=>{
+    const sweep=val/total*Math.PI*2;
+    const color=colors[i%colors.length];
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,angle,angle+sweep);
+    ctx.closePath();
+    ctx.fillStyle=color;
+    ctx.fill();
+    // 2px surface gap
+    ctx.strokeStyle=isDark?'#282422':'#FFF';
+    ctx.lineWidth=2;
+    ctx.stroke();
+
+    // Label if slice big enough
+    if(val/total>0.06){
+      const mid=angle+sweep/2;
+      const lx=cx+Math.cos(mid)*(r*0.65);
+      const ly=cy+Math.sin(mid)*(r*0.65);
+      ctx.fillStyle=isDark?'#F5F0EB':'#1C1A18';
+      ctx.font='bold 11px -apple-system,sans-serif';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(Math.round(val/total*100)+'%',lx,ly);
+    }
+    slices.push({label,val,color});
+    angle+=sweep;
+  });
+
+  const leg=document.getElementById(legendId);
+  if(leg){
+    leg.innerHTML=slices.map(s=>`<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div>${s.label} ${s.val}</div>`).join('');
+  }
+}
+
+function drawBars(containerId,entries,maxVal,color){
+  const el=document.getElementById(containerId);
+  if(!maxVal)maxVal=Math.max(...entries.map(e=>e[1]),1);
+  el.innerHTML=entries.map(([label,val])=>{
+    const pct=(val/maxVal*100).toFixed(1);
+    return`<div class="h-bar"><div class="h-bar-label"><span>${label}</span><span>${val}</span></div><div class="h-bar-track"><div class="h-bar-fill" style="width:${pct}%;background:${color||'var(--c1)'}"></div></div></div>`;
+  }).join('');
+}
+
+function drawTrend(canvasId,daily){
+  const canvas=document.getElementById(canvasId);
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr;
+  canvas.height=rect.height*dpr;
+  ctx.scale(dpr,dpr);
+  const w=rect.width,h=rect.height;
+  const pad={t:20,r:60,b:30,l:40};
+  const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+
+  const maxO=Math.max(...daily.map(d=>d.orders),1);
+  const maxR=Math.max(...daily.map(d=>d.revenue),1);
+  const n=daily.length;
+
+  // Grid
+  ctx.strokeStyle=isDark?'#3A3632':'#EDE8E3';
+  ctx.lineWidth=1;
+  for(let i=0;i<4;i++){
+    const y=pad.t+ch*i/3;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+  }
+
+  // Bars (orders)
+  const bw=cw/n*0.5;
+  daily.forEach((d,i)=>{
+    const x=pad.l+cw*i/(n-1);
+    const bh=d.orders/maxO*ch;
+    ctx.fillStyle=isDark?'rgba(57,135,229,0.3)':'rgba(42,120,214,0.2)';
+    ctx.beginPath();
+    ctx.roundRect(x-bw/2,pad.t+ch-bh,bw,bh,[3,3,0,0]);
+    ctx.fill();
+  });
+
+  // Line (revenue)
+  ctx.strokeStyle=isDark?'#E0758B':'#C4536A';
+  ctx.lineWidth=2;
+  ctx.lineJoin='round';
+  ctx.lineCap='round';
+  ctx.beginPath();
+  daily.forEach((d,i)=>{
+    const x=pad.l+cw*i/(n-1);
+    const y=pad.t+ch-d.revenue/maxR*ch;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Area fill
+  ctx.fillStyle=isDark?'rgba(224,117,139,0.08)':'rgba(196,83,106,0.06)';
+  ctx.beginPath();
+  daily.forEach((d,i)=>{
+    const x=pad.l+cw*i/(n-1);
+    const y=pad.t+ch-d.revenue/maxR*ch;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.lineTo(pad.l+cw,pad.t+ch);
+  ctx.lineTo(pad.l,pad.t+ch);
+  ctx.closePath();
+  ctx.fill();
+
+  // End dot
+  const lastD=daily[n-1];
+  const lx=pad.l+cw;
+  const ly=pad.t+ch-lastD.revenue/maxR*ch;
+  ctx.fillStyle=isDark?'#282422':'#FFF';
+  ctx.beginPath();ctx.arc(lx,ly,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=isDark?'#E0758B':'#C4536A';
+  ctx.beginPath();ctx.arc(lx,ly,3.5,0,Math.PI*2);ctx.fill();
+
+  // X labels
+  ctx.fillStyle=isDark?'#7A746E':'#9E9890';
+  ctx.font='10px -apple-system,sans-serif';
+  ctx.textAlign='center';
+  daily.forEach((d,i)=>{
+    if(i%2===0||i===n-1){
+      const x=pad.l+cw*i/(n-1);
+      ctx.fillText(d.d,x,h-6);
+    }
+  });
+
+  // Y labels
+  ctx.textAlign='right';
+  ctx.textBaseline='middle';
+  for(let i=0;i<4;i++){
+    const y=pad.t+ch*i/3;
+    const v=maxO*(3-i)/3;
+    ctx.fillText(fmt(v),pad.l-6,y);
+  }
+
+  // Right Y (revenue)
+  ctx.textAlign='left';
+  ctx.fillStyle=isDark?'#E0758B':'#C4536A';
+  for(let i=0;i<4;i++){
+    const y=pad.t+ch*i/3;
+    const v=maxR*(3-i)/3;
+    ctx.fillText('$'+fmt(v),pad.l+cw+6,y);
+  }
+
+  // Legend
+  ctx.fillStyle=isDark?'rgba(57,135,229,0.5)':'rgba(42,120,214,0.4)';
+  ctx.fillRect(pad.l,h-16,10,10);
+  ctx.fillStyle=isDark?'#B0A99F':'#6B6560';
+  ctx.font='10px -apple-system,sans-serif';
+  ctx.textAlign='left';
+  ctx.fillText('订单数',pad.l+14,h-7);
+  ctx.strokeStyle=isDark?'#E0758B':'#C4536A';
+  ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(pad.l+70,h-11);ctx.lineTo(pad.l+85,h-11);ctx.stroke();
+  ctx.fillStyle=isDark?'#B0A99F':'#6B6560';
+  ctx.fillText('销售额(MXN)',pad.l+90,h-7);
+}
+
+function render(){
+  const s=D.summary;
+  document.getElementById('kpi').innerHTML=[
+    {l:'30天订单',v:s.total_orders,d:`有效 ${s.valid_orders} / 取消 ${s.cancelled}`},
+    {l:'销售额',v:'MX$'+fmt(s.total_revenue),d:`均单 MX$${fmt(s.avg_order)}`},
+    {l:'商品件数',v:s.total_items,d:'有效订单'},
+    {l:'货到付款',v:s.cod_rate+'%',d:`${s.valid_orders}单中`},
+    {l:'样品申请',v:s.total_samples,d:`其中样品单 ${s.sample_orders}`},
+  ].map(k=>`<div class="kpi"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="d">${k.d}</div></div>`).join('');
+
+  setTimeout(()=>{
+    drawTrend('trendChart',D.daily);
+    drawPie('statusPie','statusLeg',D.order_status,CS);
+    drawPie('payPie','payLeg',D.payment,CS);
+    drawPie('shipPie','shipLeg',Object.fromEntries(D.providers),CS);
+    drawBars('regionBars',D.regions,null,'var(--c1)');
+    drawPie('sizePie','sizeLeg',D.sizes,CS);
+    drawPie('colorPie','colorLeg',Object.fromEntries(D.colors),CS);
+    drawBars('productBars',D.products,null,'var(--c3)');
+    drawPie('samplePie','sampleLeg',D.sample_status,CS);
+
+    document.getElementById('partnerList').innerHTML=D.partners.map(p=>
+      `<div class="p-card"><div class="name">${p.name}</div><div class="info">${p.creators} 位达人 · ${p.apps} 次申请</div></div>`
+    ).join('')||'<div style="color:var(--t3);font-size:13px">无机构合作</div>';
+  },50);
+}
+</script>
+</body>
+</html>

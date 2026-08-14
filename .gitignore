@@ -1,0 +1,8 @@
+﻿node_modules/
+work/
+outputs/
+官方数据/
+__pycache__/
+*.pyc
+export_samples.py
+export_partner_samples.py
