@@ -368,11 +368,19 @@ const barBg=dk?'rgba(57,135,229,0.3)':'rgba(42,120,214,0.2)';
 
 function fmt(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return Math.round(n).toLocaleString()}
 
+function initCanvas(c,fallbackH){
+  const dpr=window.devicePixelRatio||1;
+  const w=c.parentElement.clientWidth||c.clientWidth||300;
+  const h=c.clientHeight||fallbackH||200;
+  c.width=w*dpr;c.height=h*dpr;
+  const ctx=c.getContext('2d');ctx.scale(dpr,dpr);
+  return{ctx,w,h,dpr};
+}
+
 function pie(cid,lid,obj,colors){
-  const c=document.getElementById(cid),ctx=c.getContext('2d');
-  const dpr=window.devicePixelRatio||1,r0=c.getBoundingClientRect();
-  c.width=r0.width*dpr;c.height=r0.height*dpr;ctx.scale(dpr,dpr);
-  const w=r0.width,h=r0.height,cx=w/2,cy=h/2,R=Math.min(w,h)/2-16;
+  const c=document.getElementById(cid);
+  const{ctx,w,h}=initCanvas(c,200);
+  const cx=w/2,cy=h/2,R=Math.min(w,h)/2-16;
   const ent=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
   const tot=ent.reduce((s,[,v])=>s+v,0);
   if(!tot){ctx.fillStyle=mutCol;ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('无数据',cx,cy);return}
@@ -404,10 +412,9 @@ function bars(id,ent,color){
 }
 
 function drawTrend(daily,selDay){
-  const c=document.getElementById('trendC'),ctx=c.getContext('2d');
-  const dpr=window.devicePixelRatio||1,r0=c.getBoundingClientRect();
-  c.width=r0.width*dpr;c.height=r0.height*dpr;ctx.scale(dpr,dpr);
-  const w=r0.width,h=r0.height,pad={t:16,r:56,b:28,l:36};
+  const c=document.getElementById('trendC');
+  const{ctx,w,h}=initCanvas(c,200);
+  const pad={t:16,r:56,b:28,l:36};
   const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
   const n=daily.length;
   const maxO=Math.max(...daily.map(d=>d.orders),1);
@@ -451,10 +458,9 @@ function drawTrend(daily,selDay){
 }
 
 function drawHours(hours){
-  const c=document.getElementById('hourC'),ctx=c.getContext('2d');
-  const dpr=window.devicePixelRatio||1,r0=c.getBoundingClientRect();
-  c.width=r0.width*dpr;c.height=r0.height*dpr;ctx.scale(dpr,dpr);
-  const w=r0.width,h=r0.height,pad={t:10,r:10,b:24,l:28};
+  const c=document.getElementById('hourC');
+  const{ctx,w,h}=initCanvas(c,200);
+  const pad={t:10,r:10,b:24,l:28};
   const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
   const vals=[];for(let i=0;i<24;i++)vals.push(parseInt(hours[i]||0));
   const mx=Math.max(...vals,1);
@@ -466,7 +472,7 @@ function drawHours(hours){
   vals.forEach((v,i)=>{
     const x=pad.l+cw*(i+.5)/24;
     const bh=v/mx*ch;
-    ctx.fillStyle='var(--c1)';
+    ctx.fillStyle=CS[0];
     ctx.globalAlpha=0.7;
     ctx.beginPath();ctx.roundRect(x-bw/2,pad.t+ch-bh,bw,bh,[2,2,0,0]);ctx.fill();
     ctx.globalAlpha=1;
