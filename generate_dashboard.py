@@ -445,7 +445,7 @@ function drawTrend(daily,selDay){
   ctx.fillStyle=acCol;ctx.beginPath();ctx.arc(lx,ly,3.5,0,Math.PI*2);ctx.fill();
 
   ctx.fillStyle=mutCol;ctx.font='10px sans-serif';ctx.textAlign='center';
-  const step=w<500?4:2;daily.forEach((d,i)=>{if(i%step===0||i===n-1){ctx.fillText(d.d,pad.l+cw*(i+.5)/n,h-4)}});
+  const step=w<500?4:2;let lastX=-99;daily.forEach((d,i)=>{if(i%step===0||i===n-1){const tx=pad.l+cw*(i+.5)/n;if(tx-lastX>35){ctx.fillText(d.d,tx,h-4);lastX=tx}}});
   ctx.textAlign='right';ctx.textBaseline='middle';
   for(let i=0;i<4;i++){ctx.fillText(fmt(maxO*(3-i)/3),pad.l-4,pad.t+ch*i/3)}
   ctx.textAlign='left';ctx.fillStyle=acCol;
