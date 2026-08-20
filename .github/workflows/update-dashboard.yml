@@ -2,7 +2,8 @@ name: Update Dashboard
 
 on:
   schedule:
-    - cron: '0 14 * * *'  # UTC 14:00 = 墨西哥时间 08:00
+    - cron: '6 6 * * *'   # UTC 06:06 = 墨西哥时间 00:06（抓昨天完整数据）
+    - cron: '0 4 * * *'   # UTC 04:00 = 墨西哥时间 22:00（抓今天大部分数据）
   workflow_dispatch:       # 手动触发
 
 permissions:
