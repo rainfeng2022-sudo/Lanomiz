@@ -71,9 +71,7 @@ def fetch_all_samples(keys, cipher):
 def analyze_orders(orders):
     """Analyze a list of orders into chart-ready data."""
     excluded = {"CANCELLED", "UNPAID"}
-    paid = [o for o in orders if o.get("status") not in excluded]
-    valid = [o for o in paid if not o.get("is_sample_order")]
-    sample = [o for o in paid if o.get("is_sample_order")]
+    valid = [o for o in orders if o.get("status") not in excluded]
     cancelled = [o for o in orders if o.get("status") == "CANCELLED"]
     unpaid = [o for o in orders if o.get("status") == "UNPAID"]
 
@@ -88,6 +86,7 @@ def analyze_orders(orders):
     cod_count = 0
     total_revenue = 0
     total_items = 0
+    sample_count = 0
 
     for o in orders:
         status_count[STATUS_ZH.get(o.get("status", ""), o.get("status", ""))] += 1
@@ -97,6 +96,7 @@ def analyze_orders(orders):
         items = o.get("line_items") or []
         total_items += len(items)
         if o.get("is_cod"): cod_count += 1
+        if o.get("is_sample_order"): sample_count += 1
         payment_count[o.get("payment_method_name") or "未知"] += 1
         provider_count[o.get("shipping_provider") or "未分配"] += 1
         s = state_from_zip((o.get("recipient_address") or {}).get("postal_code") or "")
@@ -120,9 +120,8 @@ def analyze_orders(orders):
 
     return {
         "total": len(orders), "valid": len(valid), "cancelled": len(cancelled), "unpaid": len(unpaid),
-        "sample_orders": len(sample),
         "revenue": round(total_revenue, 2),
-        "items": total_items,
+        "items": total_items, "sample_orders": sample_count,
         "avg_order": round(total_revenue / len(valid), 2) if valid else 0,
         "cod_rate": round(cod_count / len(valid) * 100, 1) if valid else 0,
         "status": dict(status_count),
