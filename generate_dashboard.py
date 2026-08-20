@@ -70,8 +70,10 @@ def fetch_all_samples(keys, cipher):
 
 def analyze_orders(orders):
     """Analyze a list of orders into chart-ready data."""
-    valid = [o for o in orders if o.get("status") != "CANCELLED"]
+    excluded = {"CANCELLED", "UNPAID"}
+    valid = [o for o in orders if o.get("status") not in excluded]
     cancelled = [o for o in orders if o.get("status") == "CANCELLED"]
+    unpaid = [o for o in orders if o.get("status") == "UNPAID"]
 
     status_count = defaultdict(int)
     payment_count = defaultdict(int)
@@ -117,7 +119,7 @@ def analyze_orders(orders):
             elif sku: size_qty[sku.upper()] += 1
 
     return {
-        "total": len(orders), "valid": len(valid), "cancelled": len(cancelled),
+        "total": len(orders), "valid": len(valid), "cancelled": len(cancelled), "unpaid": len(unpaid),
         "revenue": round(total_revenue, 2),
         "items": total_items, "sample_orders": sample_count,
         "avg_order": round(total_revenue / len(valid), 2) if valid else 0,
@@ -159,7 +161,7 @@ def collect_data(keys, cipher):
         day_orders = by_day.get(d, [])
         analysis = analyze_orders(day_orders)
         days_data[d] = analysis
-        trend.append({"d": d[5:], "orders": analysis["total"], "revenue": analysis["revenue"]})
+        trend.append({"d": d[5:], "orders": analysis["valid"], "revenue": analysis["revenue"]})
 
     # Samples
     sys.stderr.write("Fetching samples...\n")
@@ -504,7 +506,7 @@ function renderDay(day){
   }
 
   document.getElementById('kpi').innerHTML=[
-    {l:'订单',v:dd.total,d:`有效 ${dd.valid} / 取消 ${dd.cancelled}`+delta(dd.total,prev?.total)},
+    {l:'订单',v:dd.valid,d:`未付款 ${dd.unpaid||0} / 取消 ${dd.cancelled}`+delta(dd.valid,prev?.valid)},
     {l:'销售额',v:'MX$'+fmt(dd.revenue),d:'有效订单'+delta(dd.revenue,prev?.revenue)},
     {l:'商品件数',v:dd.items,d:'有效订单'},
     {l:'均单价',v:'MX$'+fmt(dd.avg_order),d:''},
