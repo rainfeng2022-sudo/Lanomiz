@@ -122,6 +122,7 @@ def get_shop_cipher(keys: Dict[str, str]) -> str:
 
 
 def fetch_orders(keys: Dict[str, str], cipher: str, start_ts: int, end_ts: int) -> List[Dict[str, Any]]:
+    seen: set = set()
     orders: List[Dict[str, Any]] = []
     page_token = ""
     while True:
@@ -135,7 +136,11 @@ def fetch_orders(keys: Dict[str, str], cipher: str, start_ts: int, end_ts: int) 
             params,
             {"create_time_ge": start_ts, "create_time_lt": end_ts},
         )
-        orders.extend(data.get("orders") or [])
+        for o in data.get("orders") or []:
+            oid = o.get("id")
+            if oid not in seen:
+                seen.add(oid)
+                orders.append(o)
         page_token = data.get("next_page_token") or ""
         if not page_token:
             break
