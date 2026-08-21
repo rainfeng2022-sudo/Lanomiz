@@ -92,7 +92,7 @@ def analyze_orders(orders):
     for o in valid:
         total_revenue += float((o.get("payment") or {}).get("total_amount") or 0)
         items = o.get("line_items") or []
-        total_items += len(items)
+        total_items += sum(int(i.get("quantity", 1)) for i in items)
         if o.get("is_cod"): cod_count += 1
         if o.get("is_sample_order"): sample_count += 1
         payment_count[o.get("payment_method_name") or "未知"] += 1
@@ -104,17 +104,18 @@ def analyze_orders(orders):
             hour_count[h] += 1
         except: pass
         for item in items:
+            qty = int(item.get("quantity", 1))
             name = (item.get("product_name") or "未知")
             if len(name) > 35: name = name[:35] + "…"
-            product_qty[name] += 1
+            product_qty[name] += qty
             sku = (item.get("sku_name") or "").strip()
             if "," in sku:
                 color, size = (p.strip() for p in sku.rsplit(",", 1))
                 if color:
                     color = re.sub(r"\s*\([^)]*\)", "", color).strip() or color
-                    color_qty[color] += 1
-                if size: size_qty[size.upper()] += 1
-            elif sku: size_qty[sku.upper()] += 1
+                    color_qty[color] += qty
+                if size: size_qty[size.upper()] += qty
+            elif sku: size_qty[sku.upper()] += qty
 
     return {
         "total": len(orders), "valid": len(valid), "cancelled": len(cancelled),
