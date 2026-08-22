@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>LANOMIZ 运营看板</title>
+<style>
+:root{
+  --bg:#FAF8F6;--card:#FFF;--bdr:#EDE8E3;
+  --t1:#1C1A18;--t2:#6B6560;--t3:#9E9890;
+  --ac:#C4536A;--acl:rgba(196,83,106,.08);
+  --c1:#2a78d6;--c2:#eb6834;--c3:#1baf7a;--c4:#eda100;--c5:#e87ba4;--c6:#4a3aa7;--c7:#e34948;--c8:#008300;
+  --good:#1baf7a;--warn:#eda100;--bad:#e34948;--div:#E8E3DE;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1C1A18;--card:#282422;--bdr:#3A3632;
+  --t1:#F5F0EB;--t2:#B0A99F;--t3:#7A746E;
+  --ac:#E0758B;--acl:rgba(224,117,139,.12);
+  --c1:#3987e5;--c2:#d95926;--c3:#199e70;--c4:#c98500;--c5:#d55181;--c6:#9085e9;--c7:#e66767;--c8:#008300;
+  --div:#3A3632;
+}}
+:root[data-theme="dark"]{
+  --bg:#1C1A18;--card:#282422;--bdr:#3A3632;
+  --t1:#F5F0EB;--t2:#B0A99F;--t3:#7A746E;
+  --ac:#E0758B;--acl:rgba(224,117,139,.12);
+  --c1:#3987e5;--c2:#d95926;--c3:#199e70;--c4:#c98500;--c5:#d55181;--c6:#9085e9;--c7:#e66767;--c8:#008300;
+  --div:#3A3632;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums;line-height:1.5;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+
+#login{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:24px}
+.lbox{background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:40px 32px;width:100%;max-width:320px;text-align:center}
+.lbox h2{font-size:18px;font-weight:700;margin-bottom:4px}
+.lbox .sub{font-size:13px;color:var(--t2);margin-bottom:20px}
+.lbox input{width:100%;padding:12px 16px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;background:var(--bg);color:var(--t1);outline:none;-webkit-appearance:none}
+.lbox input:focus{border-color:var(--ac)}
+.lbox button{width:100%;margin-top:12px;padding:12px;border:none;border-radius:8px;background:var(--ac);color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.lbox .err{color:var(--bad);font-size:13px;margin-top:8px;display:none}
+
+#dash{display:none}
+.page{max-width:1100px;margin:0 auto;padding:24px 14px 60px}
+.hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.hdr h1{font-size:20px;font-weight:700}
+.date-pick{display:flex;align-items:center;gap:8px}
+.date-pick select{padding:8px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;font-weight:600;background:var(--card);color:var(--t1);cursor:pointer;outline:none}
+.date-pick .upd{font-size:11px;color:var(--t3)}
+
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:16px 0}
+.kpi{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:12px 14px}
+.kpi .l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-size:22px;font-weight:700;margin-top:2px;letter-spacing:-.02em}
+.kpi .d{font-size:10px;color:var(--t2);margin-top:1px}
+.kpi .up{color:var(--good)}
+.kpi .dn{color:var(--bad)}
+
+.sec{margin-top:22px}
+.sec-t{font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--div)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cc{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:14px}
+.cc h3{font-size:12px;font-weight:600;margin-bottom:8px}
+.cc canvas{width:100%!important;height:200px!important}
+.cc.full{grid-column:span 2}
+
+.leg{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px}
+.li{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--t2)}
+.ld{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+.hb{margin:3px 0}
+.hb-l{font-size:11px;color:var(--t2);margin-bottom:1px;display:flex;justify-content:space-between}
+.hb-t{height:16px;background:var(--div);border-radius:3px;overflow:hidden}
+.hb-f{height:100%;border-radius:3px;min-width:2px}
+
+.pl{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.pc{background:var(--acl);border-radius:8px;padding:10px 12px}
+.pc .nm{font-size:13px;font-weight:600}
+.pc .inf{font-size:11px;color:var(--t2);margin-top:3px}
+
+@media(max-width:640px){
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .kpi:nth-child(5){grid-column:span 2}
+  .g2{grid-template-columns:1fr}
+  .cc.full{grid-column:span 1}
+  .page{padding:16px 10px 60px}
+  .hdr h1{font-size:17px}
+  .kpi .v{font-size:18px}
+  .hdr{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="lbox">
+    <h2>LANOMIZ</h2>
+    <div class="sub">店铺运营看板</div>
+    <input type="password" id="pwd" placeholder="请输入密码" autocomplete="off">
+    <button onclick="go()">进入</button>
+    <div class="err" id="err">密码错误</div>
+  </div>
+</div>
+
+<div id="dash">
+  <div class="page">
+    <div class="hdr">
+      <h1>LANOMIZ 运营看板</h1>
+      <div class="date-pick">
+        <select id="daysel" onchange="switchDay(this.value)"></select>
+        <div class="upd">更新 2026-08-22 00:59 (墨西哥时间)</div>
+      </div>
+    </div>
+    <div class="kpi-row" id="kpi"></div>
+
+    <div class="sec">
+      <div class="sec-t">14天趋势</div>
+      <div class="cc full"><div class="leg" style="margin-bottom:6px"><div class="li"><div class="ld" style="background:rgba(42,120,214,0.5)"></div>订单量</div><div class="li"><div class="ld" style="background:#C4536A"></div>销售额</div></div><canvas id="trendC" style="width:100%;height:220px"></canvas></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-t" id="dayTitle">当日订单分析</div>
+      <div class="g2">
+        <div class="cc"><h3>订单状态</h3><canvas id="pie1" height="200"></canvas><div class="leg" id="leg1"></div></div>
+        <div class="cc"><h3>支付方式</h3><canvas id="pie2" height="200"></canvas><div class="leg" id="leg2"></div></div>
+        <div class="cc"><h3>尺码分布</h3><canvas id="pie3" height="200"></canvas><div class="leg" id="leg3"></div></div>
+        <div class="cc"><h3>颜色分布</h3><canvas id="pie4" height="200"></canvas><div class="leg" id="leg4"></div></div>
+        <div class="cc"><h3>下单时段</h3><canvas id="hourC" style="width:100%;height:200px"></canvas></div>
+        <div class="cc"><h3>地区 Top 10</h3><div id="regionB"></div></div>
+        <div class="cc full"><h3>热卖商品</h3><div id="prodB"></div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-t">样品申请（全量）</div>
+      <div class="g2">
+        <div class="cc"><h3>样品状态</h3><canvas id="pie5" height="200"></canvas><div class="leg" id="leg5"></div></div>
+        <div class="cc"><h3>合作机构</h3><div class="pl" id="partL"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PH="4680345f75393dc022bbae65d2b05307ac7eed59188a4a7530bbd1e5732a9de9";
+async function sha256(s){const d=new TextEncoder().encode(s);const h=await crypto.subtle.digest('SHA-256',d);return[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function go(){
+  if(await sha256(document.getElementById('pwd').value)===PH){
+    document.getElementById('login').style.display='none';
+    document.getElementById('dash').style.display='block';
+    try{sessionStorage.setItem('a','1')}catch(e){}
+    requestAnimationFrame(()=>requestAnimationFrame(init));
+  }else document.getElementById('err').style.display='block';
+}
+document.getElementById('pwd').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+try{if(sessionStorage.getItem('a')==='1'){document.getElementById('login').style.display='none';document.getElementById('dash').style.display='block';if(document.readyState!=='loading')requestAnimationFrame(()=>requestAnimationFrame(init));else window.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(()=>requestAnimationFrame(init)))}}catch(e){}
+
+const D={"days": {"2026-08-09": {"total": 13, "valid": 11, "cancelled": 2, "revenue": 2533.85, "items": 19, "sample_orders": 2, "avg_order": 230.35, "cod_rate": 0.0, "status": {"已送达": 11, "已取消": 2}, "payment": {"PayLater": 1, "Credit/debit card": 5, "CCI": 2, "未知": 2, "Apple Pay": 1}, "products": [["LANOMIZ sujetador de gel para mujer…", 19]], "sizes": {"XL": 2, "3XL": 7, "2XL": 5, "M": 4, "L": 1}, "colors": [["Nude", 9], ["Negro", 5], ["Rosa empolvado", 4], ["Rosa nude", 1]], "regions": [["墨西哥城", 3], ["索诺拉", 2], ["瓜纳华托", 1], ["墨西哥州", 1], ["锡那罗亚", 1], ["科利马", 1], ["科阿韦拉", 1], ["伊达尔戈", 1]], "providers": [["J&T MX", 11]], "hours": {"0": 4, "20": 2, "21": 2, "22": 1, "23": 2}}, "2026-08-10": {"total": 32, "valid": 29, "cancelled": 3, "revenue": 7048.45, "items": 52, "sample_orders": 6, "avg_order": 243.05, "cod_rate": 0.0, "status": {"已送达": 29, "已取消": 3}, "payment": {"Credit/debit card": 11, "未知": 6, "Apple Pay": 2, "Mercado Pago": 4, "Cash": 2, "SPEI": 2, "CCI": 1, "PayLater": 1}, "products": [["LANOMIZ sujetador de gel para mujer…", 51], ["LANOMIZ sujetador sin aros cómodo y…", 1]], "sizes": {"2XL": 13, "XL": 12, "L": 12, "3XL": 7, "M": 8}, "colors": [["Negro", 17], ["Nude", 14], ["Rosa empolvado", 12], ["Rosa nude", 6], ["Rosa leopardo", 1], ["Canela", 1], ["Piel oscura leopardo", 1]], "regions": [["哈利斯科", 6], ["墨西哥州", 4], ["下加州", 3], ["纳亚里特", 2], ["墨西哥城", 2], ["韦拉克鲁斯", 2], ["米却肯", 2], ["瓜纳华托", 1], ["科阿韦拉", 1], ["锡那罗亚", 1]], "providers": [["J&T MX", 29]], "hours": {"0": 1, "2": 2, "3": 3, "4": 2, "5": 1, "8": 1, "9": 1, "10": 2, "11": 2, "13": 3, "14": 3, "16": 2, "17": 1, "19": 2, "20": 1, "23": 2}}, "2026-08-11": {"total": 53, "valid": 42, "cancelled": 11, "revenue": 9350.52, "items": 74, "sample_orders": 11, "avg_order": 222.63, "cod_rate": 0.0, "status": {"已送达": 42, "已取消": 11}, "payment": {"未知": 11, "CCI": 9, "Mercado Pago": 8, "Credit/debit card": 9, "PayLater": 3, "SPEI": 1, "PayPal": 1}, "products": [["LANOMIZ sujetador de gel para mujer…", 74]], "sizes": {"3XL": 16, "L": 17, "M": 11, "2XL": 17, "XL": 13}, "colors": [["Negro", 24], ["Rosa empolvado", 20], ["Nude", 17], ["Rosa nude", 9], ["Piel clara leopardo", 2], ["Rosa leopardo", 1], ["Piel oscura leopardo", 1]], "regions": [["哈利斯科", 8], ["墨西哥州", 6], ["新莱昂", 4], ["墨西哥城", 4], ["奇瓦瓦", 4], ["阿瓜斯", 2], ["伊达尔戈", 2], ["科利马", 1], ["克雷塔罗", 1], ["纳亚里特", 1]], "providers": [["J&T MX", 42]], "hours": {"0": 4, "1": 4, "5": 1, "6": 1, "9": 2, "10": 1, "11": 2, "12": 2, "13": 1, "15": 2, "16": 1, "18": 2, "19": 1, "20": 4, "21": 3, "22": 6, "23": 5}}, "2026-08-12": {"total": 92, "valid": 71, "cancelled": 21, "revenue": 13338.05, "items": 104, "sample_orders": 18, "avg_order": 187.86, "cod_rate": 0.0, "status": {"已送达": 69, "已取消": 21, "已完成": 2}, "payment": {"未知": 18, "Mercado Pago": 15, "Credit/debit card": 18, "PayPal": 2, "Cash + TikTok Shop Balance": 1, "CCI": 10, "PayLater": 3, "SPEI": 3, "Apple Pay": 1}, "products": [["LANOMIZ sujetador de gel para mujer…", 104]], "sizes": {"L": 31, "M": 16, "XL": 28, "2XL": 16, "3XL": 13}, "colors": [["Nude", 37], ["Rosa empolvado", 26], ["Negro", 20], ["Rosa nude", 17], ["Piel clara leopardo", 3], ["Piel oscura leopardo", 1]], "regions": [["墨西哥州", 11], ["墨西哥城", 8], ["瓜纳华托", 8], ["奇瓦瓦", 5], ["新莱昂", 4], ["恰帕斯", 3], ["韦拉克鲁斯", 3], ["米却肯", 3], ["哈利斯科", 3], ["塔毛利帕斯", 3]], "providers": [["J&T MX", 71]], "hours": {"1": 2, "2": 3, "3": 2, "5": 1, "6": 6, "7": 14, "8": 6, "9": 2, "10": 1, "12": 2, "14": 4, "15": 22, "16": 1, "20": 1, "22": 2, "23": 2}}, "2026-08-13": {"total": 66, "valid": 55, "cancelled": 11, "revenue": 9809.96, "items": 87, "sample_orders": 20, "avg_order": 178.36, "cod_rate": 0.0, "status": {"已送达": 54, "已取消": 11, "已完成": 1}, "payment": {"未知": 20, "CCI": 4, "Credit/debit card": 12, "Mercado Pago": 12, "Cash": 3, "PayLater": 2, "PayPal": 2}, "products": [["LANOMIZ sujetador de gel para mujer…", 87]], "sizes": {"XL": 18, "M": 20, "L": 25, "2XL": 13, "3XL": 11}, "colors": [["Nude", 34], ["Rosa nude", 21], ["Rosa empolvado", 18], ["Negro", 14]], "regions": [["哈利斯科", 8], ["墨西哥城", 8], ["韦拉克鲁斯", 6], ["瓜纳华托", 5], ["墨西哥州", 4], ["下加州", 3], ["克雷塔罗", 3], ["新莱昂", 3], ["瓦哈卡", 2], ["塔巴斯科", 2]], "providers": [["J&T MX", 55]], "hours": {"1": 1, "2": 8, "3": 6, "4": 1, "6": 4, "7": 2, "9": 2, "10": 6, "11": 1, "13": 2, "14": 3, "16": 1, "18": 1, "19": 5, "20": 5, "21": 3, "22": 2, "23": 2}}, "2026-08-14": {"total": 45, "valid": 35, "cancelled": 10, "revenue": 7711.92, "items": 60, "sample_orders": 10, "avg_order": 220.34, "cod_rate": 0.0, "status": {"已送达": 35, "已取消": 10}, "payment": {"Mercado Pago": 5, "未知": 10, "Credit/debit card": 12, "CCI": 4, "Cash": 2, "SPEI": 1, "PayLater": 1}, "products": [["LANOMIZ sujetador de gel para mujer…", 60]], "sizes": {"2XL": 10, "L": 21, "M": 5, "3XL": 14, "XL": 10}, "colors": [["Rosa empolvado", 22], ["Rosa nude", 18], ["Nude", 12], ["Negro", 8]], "regions": [["墨西哥城", 5], ["下加州", 3], ["墨西哥州", 3], ["瓜纳华托", 3], ["米却肯", 2], ["克雷塔罗", 2], ["科阿韦拉", 2], ["奇瓦瓦", 2], ["韦拉克鲁斯", 2], ["哈利斯科", 1]], "providers": [["J&T MX", 35]], "hours": {"0": 2, "2": 3, "4": 1, "6": 3, "7": 2, "8": 2, "9": 2, "11": 4, "13": 3, "15": 1, "16": 1, "17": 3, "18": 1, "21": 2, "22": 2, "23": 3}}, "2026-08-15": {"total": 41, "valid": 32, "cancelled": 9, "revenue": 7711.76, "items": 58, "sample_orders": 5, "avg_order": 240.99, "cod_rate": 0.0, "status": {"已送达": 31, "已取消": 9, "运输中": 1}, "payment": {"Mercado Pago": 7, "未知": 5, "Credit/debit card": 16, "CCI": 2, "PayPal": 1, "SPEI": 1}, "products": [["LANOMIZ sujetador de gel para mujer…", 58]], "sizes": {"2XL": 11, "L": 16, "3XL": 15, "XL": 8, "M": 8}, "colors": [["Rosa empolvado", 20], ["Rosa nude", 18], ["Nude", 10], ["Negro", 7], ["Piel clara leopardo", 2], ["Rosa leopardo", 1]], "regions": [["墨西哥州", 9], ["墨西哥城", 5], ["杜兰戈", 3], ["哈利斯科", 2], ["锡那罗亚", 2], ["圣路易斯", 2], ["克雷塔罗", 2], ["科利马", 2], ["米却肯", 1], ["新莱昂", 1]], "providers": [["J&T MX", 32]], "hours": {"0": 1, "1": 2, "2": 1, "4": 2, "8": 5, "9": 4, "11": 1, "15": 1, "16": 1, "17": 1, "18": 1, "19": 4, "20": 4, "22": 2, "23": 2}}, "2026-08-16": {"total": 21, "valid": 16, "cancelled": 5, "revenue": 3879.91, "items": 29, "sample_orders": 2, "avg_order": 242.49, "cod_rate": 0.0, "status": {"已送达": 15, "已取消": 5, "运输中": 1}, "payment": {"Mercado Pago": 7, "Credit/debit card": 4, "CCI": 2, "Cash": 1, "未知": 2}, "products": [["LANOMIZ sujetador de gel para mujer…", 29]], "sizes": {"L": 7, "2XL": 6, "3XL": 3, "XL": 10, "M": 3}, "colors": [["Rosa empolvado", 13], ["Rosa nude", 7], ["Nude", 6], ["Negro", 3]], "regions": [["锡那罗亚", 2], ["克雷塔罗", 1], ["哈利斯科", 1], ["南下加州", 1], ["萨卡特卡斯", 1], ["尤卡坦", 1], ["圣路易斯", 1], ["科阿韦拉", 1], ["墨西哥州", 1], ["伊达尔戈", 1]], "providers": [["J&T MX", 16]], "hours": {"0": 1, "5": 1, "12": 1, "13": 1, "14": 1, "15": 2, "16": 2, "20": 1, "21": 3, "22": 1, "23": 2}}, "2026-08-17": {"total": 70, "valid": 59, "cancelled": 11, "revenue": 5721.95, "items": 83, "sample_orders": 41, "avg_order": 96.98, "cod_rate": 0.0, "status": {"已送达": 56, "运输中": 3, "已取消": 11}, "payment": {"未知": 41, "Credit/debit card": 5, "CCI": 5, "PayPal": 2, "Cash": 3, "Mercado Pago": 3}, "products": [["LANOMIZ sujetador de gel para mujer…", 82], ["LANOMIZ sujetador de gel sin aros p…", 1]], "sizes": {"L": 21, "M": 23, "XL": 19, "2XL": 17, "3XL": 3}, "colors": [["Rosa empolvado", 30], ["Negro", 20], ["Rosa nude", 17], ["Nude", 15], ["Leopardo café", 1]], "regions": [["墨西哥州", 10], ["哈利斯科", 6], ["韦拉克鲁斯", 5], ["米却肯", 5], ["恰帕斯", 4], ["瓜纳华托", 3], ["墨西哥城", 3], ["克雷塔罗", 3], ["塔毛利帕斯", 3], ["伊达尔戈", 2]], "providers": [["J&T MX", 59]], "hours": {"0": 2, "1": 11, "2": 9, "3": 8, "4": 1, "7": 3, "8": 1, "10": 1, "17": 1, "18": 3, "19": 1, "20": 9, "21": 8, "22": 1}}, "2026-08-18": {"total": 80, "valid": 74, "cancelled": 6, "revenue": 7140.41, "items": 99, "sample_orders": 49, "avg_order": 96.49, "cod_rate": 0.0, "status": {"已送达": 51, "运输中": 23, "已取消": 6}, "payment": {"未知": 49, "Apple Pay": 2, "Credit/debit card": 11, "Mercado Pago": 4, "CCI": 3, "Cash": 2, "PayPal": 2, "PayLater": 1}, "products": [["LANOMIZ sujetador de gel para mujer…", 99]], "sizes": {"XL": 18, "L": 30, "M": 26, "2XL": 10, "3XL": 15}, "colors": [["Rosa empolvado", 32], ["Negro", 27], ["Nude", 21], ["Rosa nude", 19]], "regions": [["韦拉克鲁斯", 9], ["哈利斯科", 8], ["墨西哥城", 8], ["墨西哥州", 5], ["瓜纳华托", 5], ["格雷罗", 4], ["新莱昂", 4], ["锡那罗亚", 4], ["米却肯", 3], ["索诺拉", 3]], "providers": [["J&T MX", 74]], "hours": {"1": 13, "2": 11, "3": 8, "4": 16, "6": 2, "7": 2, "10": 5, "11": 3, "12": 2, "13": 1, "16": 1, "17": 1, "19": 1, "20": 1, "21": 2, "22": 3, "23": 2}}, "2026-08-19": {"total": 49, "valid": 46, "cancelled": 3, "revenue": 8025.71, "items": 65, "sample_orders": 15, "avg_order": 174.47, "cod_rate": 0.0, "status": {"已送达": 16, "运输中": 20, "待付款": 10, "已取消": 3}, "payment": {"CCI": 7, "未知": 15, "Cash": 9, "Credit/debit card": 11, "SPEI": 2, "Mercado Pago": 2}, "products": [["LANOMIZ sujetador de gel para mujer…", 65]], "sizes": {"M": 16, "2XL": 15, "L": 16, "XL": 16, "3XL": 2}, "colors": [["Negro", 23], ["Rosa nude", 17], ["Rosa empolvado", 14], ["Nude", 11]], "regions": [["墨西哥州", 8], ["墨西哥城", 5], ["米却肯", 3], ["克雷塔罗", 2], ["格雷罗", 2], ["新莱昂", 2], ["瓜纳华托", 2], ["索诺拉", 1], ["哈利斯科", 1], ["杜兰戈", 1]], "providers": [["J&T MX", 36], ["未分配", 10]], "hours": {"0": 2, "1": 1, "2": 5, "4": 4, "6": 6, "7": 5, "10": 3, "12": 1, "16": 1, "17": 3, "18": 2, "20": 1, "21": 3, "22": 7, "23": 2}}, "2026-08-20": {"total": 63, "valid": 56, "cancelled": 7, "revenue": 7923.32, "items": 72, "sample_orders": 23, "avg_order": 141.49, "cod_rate": 0.0, "status": {"已送达": 2, "运输中": 48, "待付款": 6, "已取消": 7}, "payment": {"Mercado Pago": 12, "Credit/debit card": 8, "Cash": 6, "未知": 23, "PayLater": 1, "CCI": 4, "SPEI": 2}, "products": [["LANOMIZ sujetador de gel para mujer…", 72]], "sizes": {"XL": 20, "3XL": 10, "2XL": 15, "L": 20, "M": 7}, "colors": [["Rosa nude", 25], ["Negro", 24], ["Nude", 15], ["Rosa empolvado", 8]], "regions": [["哈利斯科", 5], ["墨西哥城", 4], ["瓜纳华托", 4], ["下加州", 4], ["新莱昂", 3], ["韦拉克鲁斯", 3], ["塔毛利帕斯", 2], ["金塔纳罗奥", 2], ["格雷罗", 2], ["伊达尔戈", 2]], "providers": [["J&T MX", 50], ["未分配", 6]], "hours": {"0": 3, "1": 4, "2": 1, "3": 4, "4": 3, "7": 1, "8": 1, "9": 4, "10": 4, "11": 2, "12": 1, "13": 1, "14": 2, "15": 3, "16": 2, "20": 2, "21": 8, "22": 8, "23": 2}}, "2026-08-21": {"total": 61, "valid": 61, "cancelled": 0, "revenue": 4541.64, "items": 67, "sample_orders": 40, "avg_order": 74.45, "cod_rate": 0.0, "status": {"运输中": 35, "待付款": 7, "待发货": 19}, "payment": {"未知": 40, "Credit/debit card": 9, "Mercado Pago": 3, "PayLater": 1, "Cash": 5, "SPEI": 1, "CCI": 2}, "products": [["LANOMIZ sujetador de gel para mujer…", 67]], "sizes": {"L": 26, "3XL": 6, "XL": 27, "2XL": 8}, "colors": [["Negro", 26], ["Rosa empolvado", 22], ["Nude", 14], ["Rosa nude", 5]], "regions": [["墨西哥州", 8], ["下加州", 5], ["韦拉克鲁斯", 5], ["哈利斯科", 5], ["科阿韦拉", 3], ["索诺拉", 3], ["普埃布拉", 3], ["锡那罗亚", 3], ["瓜纳华托", 3], ["新莱昂", 3]], "providers": [["J&T MX", 54], ["未分配", 7]], "hours": {"0": 3, "1": 9, "2": 1, "3": 5, "4": 16, "5": 8, "7": 2, "8": 2, "10": 1, "11": 1, "12": 1, "13": 1, "15": 1, "17": 2, "18": 2, "19": 2, "20": 3, "22": 1}}, "2026-08-22": {"total": 0, "valid": 0, "cancelled": 0, "revenue": 0, "items": 0, "sample_orders": 0, "avg_order": 0, "cod_rate": 0, "status": {}, "payment": {}, "products": [], "sizes": {}, "colors": [], "regions": [], "providers": [], "hours": {}}}, "trend": [{"d": "08-09", "orders": 11, "revenue": 2533.85}, {"d": "08-10", "orders": 29, "revenue": 7048.45}, {"d": "08-11", "orders": 42, "revenue": 9350.52}, {"d": "08-12", "orders": 71, "revenue": 13338.05}, {"d": "08-13", "orders": 55, "revenue": 9809.96}, {"d": "08-14", "orders": 35, "revenue": 7711.92}, {"d": "08-15", "orders": 32, "revenue": 7711.76}, {"d": "08-16", "orders": 16, "revenue": 3879.91}, {"d": "08-17", "orders": 59, "revenue": 5721.95}, {"d": "08-18", "orders": 74, "revenue": 7140.41}, {"d": "08-19", "orders": 46, "revenue": 8025.71}, {"d": "08-20", "orders": 56, "revenue": 7923.32}, {"d": "08-21", "orders": 61, "revenue": 4541.64}, {"d": "08-22", "orders": 0, "revenue": 0}], "default_day": "2026-08-21", "available_days": ["2026-08-22", "2026-08-21", "2026-08-20", "2026-08-19", "2026-08-18", "2026-08-17", "2026-08-16", "2026-08-15", "2026-08-14", "2026-08-13", "2026-08-12", "2026-08-11", "2026-08-10", "2026-08-09"], "samples": {"total": 4858, "status": {"待审核": 455, "撤回取消": 407, "已发货": 78, "待发货": 6, "待发布": 122, "已完成": 400, "超时取消": 3324, "拒绝取消": 37, "UNFULFILL_CANCELLED": 25, "SELLER_NOT_SHIP_CANCELLED": 4}, "partners": [{"name": "SEA IDEAL", "apps": 63, "creators": 59}, {"name": "Lucky Focus", "apps": 61, "creators": 53}, {"name": "Memo Mexico", "apps": 51, "creators": 51}, {"name": "Passionpeace Media", "apps": 46, "creators": 37}, {"name": "Lefundo Mexico", "apps": 8, "creators": 8}, {"name": "The Brainz MX", "apps": 5, "creators": 5}, {"name": "VIPStreamers GS", "apps": 3, "creators": 3}, {"name": "Okigogo Mcn", "apps": 1, "creators": 1}]}};
+const CS=['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#4a3aa7','#e34948','#008300','#9085e9','#d55181'];
+const dk=window.matchMedia('(prefers-color-scheme:dark)').matches;
+const surfCol=dk?'#282422':'#FFF';
+const txtCol=dk?'#F5F0EB':'#1C1A18';
+const mutCol=dk?'#7A746E':'#9E9890';
+const gridCol=dk?'#3A3632':'#EDE8E3';
+const acCol=dk?'#E0758B':'#C4536A';
+const barBg=dk?'rgba(57,135,229,0.3)':'rgba(42,120,214,0.2)';
+
+function fmt(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return Math.round(n).toLocaleString()}
+
+function initCanvas(c,fallbackH){
+  const dpr=window.devicePixelRatio||1;
+  const w=c.parentElement.clientWidth||c.clientWidth||300;
+  const h=c.clientHeight||fallbackH||200;
+  c.width=w*dpr;c.height=h*dpr;
+  const ctx=c.getContext('2d');ctx.scale(dpr,dpr);
+  return{ctx,w,h,dpr};
+}
+
+function pie(cid,lid,obj,colors){
+  const c=document.getElementById(cid);
+  const{ctx,w,h}=initCanvas(c,200);
+  const cx=w/2,cy=h/2,R=Math.min(w,h)/2-16;
+  const ent=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+  const tot=ent.reduce((s,[,v])=>s+v,0);
+  if(!tot){ctx.fillStyle=mutCol;ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('无数据',cx,cy);return}
+  let ang=-Math.PI/2;
+  const sl=[];
+  ent.forEach(([lb,val],i)=>{
+    const sw=val/tot*Math.PI*2,col=colors[i%colors.length];
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,ang,ang+sw);ctx.closePath();
+    ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle=surfCol;ctx.lineWidth=2;ctx.stroke();
+    if(val/tot>0.07){
+      const mid=ang+sw/2,lx=cx+Math.cos(mid)*R*.62,ly=cy+Math.sin(mid)*R*.62;
+      ctx.fillStyle=txtCol;ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(Math.round(val/tot*100)+'%',lx,ly);
+    }
+    sl.push({lb,val,col});ang+=sw;
+  });
+  const lg=document.getElementById(lid);
+  if(lg) lg.innerHTML=sl.map(s=>`<div class="li"><div class="ld" style="background:${s.col}"></div>${s.lb} ${s.val}</div>`).join('');
+}
+
+function bars(id,ent,color){
+  const el=document.getElementById(id);
+  const mx=Math.max(...ent.map(e=>e[1]),1);
+  el.innerHTML=ent.map(([l,v])=>{
+    const p=(v/mx*100).toFixed(1);
+    return`<div class="hb"><div class="hb-l"><span>${l}</span><span>${v}</span></div><div class="hb-t"><div class="hb-f" style="width:${p}%;background:${color}"></div></div></div>`;
+  }).join('');
+}
+
+function drawTrend(daily,selDay){
+  const c=document.getElementById('trendC');
+  const{ctx,w,h}=initCanvas(c,200);
+  const pad={t:10,r:56,b:24,l:36};
+  const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+  const n=daily.length;
+  const maxO=Math.max(...daily.map(d=>d.orders),1);
+  const maxR=Math.max(...daily.map(d=>d.revenue),1);
+
+  ctx.strokeStyle=gridCol;ctx.lineWidth=1;
+  for(let i=0;i<4;i++){const y=pad.t+ch*i/3;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke()}
+
+  const bw=cw/n*.45;
+  daily.forEach((d,i)=>{
+    const x=pad.l+cw*(i+.5)/n;
+    const bh=d.orders/maxO*ch;
+    const isSel=d.d===selDay.slice(5);
+    ctx.fillStyle=isSel?'rgba(196,83,106,0.35)':barBg;
+    ctx.fillRect(x-bw/2,pad.t+ch-bh,bw,bh);
+  });
+
+  ctx.strokeStyle=acCol;ctx.lineWidth=2;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();
+  daily.forEach((d,i)=>{const x=pad.l+cw*(i+.5)/n,y=pad.t+ch-d.revenue/maxR*ch;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+  ctx.stroke();
+
+  ctx.fillStyle=dk?'rgba(224,117,139,.08)':'rgba(196,83,106,.06)';ctx.beginPath();
+  daily.forEach((d,i)=>{const x=pad.l+cw*(i+.5)/n,y=pad.t+ch-d.revenue/maxR*ch;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+  ctx.lineTo(pad.l+cw*(n-.5)/n+cw/n/2,pad.t+ch);ctx.lineTo(pad.l+cw*.5/n,pad.t+ch);ctx.closePath();ctx.fill();
+
+  const last=daily[n-1],lx=pad.l+cw*(n-.5)/n,ly=pad.t+ch-last.revenue/maxR*ch;
+  ctx.fillStyle=surfCol;ctx.beginPath();ctx.arc(lx,ly,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=acCol;ctx.beginPath();ctx.arc(lx,ly,3.5,0,Math.PI*2);ctx.fill();
+
+  ctx.fillStyle=mutCol;ctx.font='10px sans-serif';ctx.textAlign='center';
+  const spots=[0,Math.round(n/3),Math.round(n*2/3),n-1];spots.forEach(i=>{if(i<n){ctx.fillText(daily[i].d,pad.l+cw*(i+.5)/n,h-4)}});
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let i=0;i<4;i++){ctx.fillText(fmt(maxO*(3-i)/3),pad.l-4,pad.t+ch*i/3)}
+  ctx.textAlign='left';ctx.fillStyle=acCol;
+  for(let i=0;i<4;i++){ctx.fillText('$'+fmt(maxR*(3-i)/3),pad.l+cw+4,pad.t+ch*i/3)}
+}
+
+function drawHours(hours){
+  const c=document.getElementById('hourC');
+  const{ctx,w,h}=initCanvas(c,200);
+  const pad={t:10,r:10,b:24,l:28};
+  const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+  const vals=[];for(let i=0;i<24;i++)vals.push(parseInt(hours[i]||0));
+  const mx=Math.max(...vals,1);
+  const bw=cw/24*.7;
+
+  ctx.strokeStyle=gridCol;ctx.lineWidth=1;
+  for(let i=0;i<3;i++){const y=pad.t+ch*i/2;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke()}
+
+  vals.forEach((v,i)=>{
+    const x=pad.l+cw*(i+.5)/24;
+    const bh=v/mx*ch;
+    ctx.fillStyle=CS[0];
+    ctx.globalAlpha=0.7;
+    ctx.fillRect(x-bw/2,pad.t+ch-bh,bw,bh);
+    ctx.globalAlpha=1;
+  });
+
+  ctx.fillStyle=mutCol;ctx.font='9px sans-serif';ctx.textAlign='center';
+  for(let i=0;i<24;i+=2){ctx.fillText(i+'',pad.l+cw*(i+.5)/24,h-4)}
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let i=0;i<3;i++){ctx.fillText(fmt(mx*(2-i)/2),pad.l-3,pad.t+ch*i/2)}
+}
+
+let curDay;
+function switchDay(d){
+  curDay=d;
+  renderDay(d);
+}
+
+function renderDay(day){
+  const dd=D.days[day];
+  if(!dd)return;
+
+  document.getElementById('dayTitle').textContent=day+' 订单分析（墨西哥时间）';
+
+  // Find previous day for comparison
+  const idx=D.available_days.indexOf(day);
+  const prevDay=idx<D.available_days.length-1?D.available_days[idx+1]:null;
+  const prev=prevDay?D.days[prevDay]:null;
+
+  function delta(cur,prv){
+    if(!prv||!prv)return'';
+    if(prv===0)return cur>0?' <span class="up">↑</span>':'';
+    const pct=((cur-prv)/prv*100).toFixed(0);
+    return pct>=0?` <span class="up">↑${pct}%</span>`:` <span class="dn">↓${Math.abs(pct)}%</span>`;
+  }
+
+  document.getElementById('kpi').innerHTML=[
+    {l:'订单',v:dd.valid,d:`有效 ${dd.valid} / 取消 ${dd.cancelled}`+delta(dd.valid,prev?.valid)},
+    {l:'销售额',v:'MX$'+fmt(dd.revenue),d:'有效订单'+delta(dd.revenue,prev?.revenue)},
+    {l:'商品件数',v:dd.items,d:'有效订单'},
+    {l:'均单价',v:'MX$'+fmt(dd.avg_order),d:''},
+    {l:'货到付款',v:dd.cod_rate+'%',d:`样品单 ${dd.sample_orders}`},
+  ].map(k=>`<div class="kpi"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="d">${k.d}</div></div>`).join('');
+
+  setTimeout(()=>{
+    drawTrend(D.trend,day);
+    pie('pie1','leg1',dd.status,CS);
+    pie('pie2','leg2',dd.payment,CS);
+    pie('pie3','leg3',dd.sizes,CS);
+    pie('pie4','leg4',Object.fromEntries(dd.colors),CS);
+    drawHours(dd.hours);
+    bars('regionB',dd.regions,'var(--c1)');
+    bars('prodB',dd.products,'var(--c3)');
+  },100);
+}
+
+function init(){
+  const sel=document.getElementById('daysel');
+  D.available_days.forEach((d,i)=>{
+    const o=document.createElement('option');
+    o.value=d;
+    o.textContent=d+(i===0?' (今天)':i===1?' (昨天)':'');
+    sel.appendChild(o);
+  });
+  sel.value=D.default_day;
+  curDay=D.default_day;
+
+  // Samples (always show full)
+  setTimeout(()=>{
+    pie('pie5','leg5',D.samples.status,CS);
+    document.getElementById('partL').innerHTML=D.samples.partners.map(p=>
+      `<div class="pc"><div class="nm">${p.name}</div><div class="inf">${p.creators}达人 · ${p.apps}次申请</div></div>`
+    ).join('')||'<div style="color:var(--t3)">无机构</div>';
+  },80);
+
+  renderDay(curDay);
+}
+</script>
+</body>
+</html>
