@@ -56,8 +56,15 @@ def fetch_all_samples(keys, cipher):
         pg += 1
         params = {"shop_cipher": cipher, "page_size": "50"}
         if pt: params["page_token"] = pt
-        data = shop_report.api_call(keys, "POST",
-            "/affiliate_seller/202508/sample_applications/search", params, {})
+        try:
+            data = shop_report.api_call(keys, "POST",
+                "/affiliate_seller/202508/sample_applications/search", params, {})
+        except RuntimeError as error:
+            # TikTok only serves the latest 10,000 applications; keep what we have.
+            if "98001004" in str(error) and all_apps:
+                sys.stderr.write("\n  Samples: reached TikTok 10,000 limit\n")
+                break
+            raise
         apps = data.get("sample_applications") or []
         all_apps.extend(apps)
         sys.stderr.write(f"\r  Samples: {len(all_apps)}")
